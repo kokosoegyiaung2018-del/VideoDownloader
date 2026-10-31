@@ -1,5 +1,4 @@
 fastapi
 uvicorn
+pydantic
 yt-dlp
-python-telegram-bot
-requests

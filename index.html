@@ -3,82 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Media Video Downloader</title>
-    <!-- Telegram Web App JS SDK -->
+    <title>Video Downloader Mini App</title>
+    <!-- Telegram Web App Script -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color, #f4f4f9);
-            color: var(--tg-theme-text-color, #222);
-            margin: 0;
+            font-family: sans-serif;
+            background: #0f172a;
+            color: #fff;
             padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center;
+            margin: 0;
         }
         .container {
-            width: 100%;
             max-width: 400px;
-            background: var(--tg-theme-secondary-bg-color, #fff);
+            margin: auto;
+            background: #1e293b;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        h2 { font-size: 18px; text-align: center; margin-bottom: 15px; }
         input {
             width: 100%;
             padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
+            margin: 10px 0;
             border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: #fff;
             box-sizing: border-box;
         }
         button {
             width: 100%;
             padding: 12px;
-            background-color: var(--tg-theme-button-color, #2481cc);
-            color: var(--tg-theme-button-text-color, #fff);
+            background: #2563eb;
+            color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
         }
-        button:active { opacity: 0.8; }
-        #result { margin-top: 20px; text-align: center; }
-        .video-title { font-weight: bold; font-size: 14px; margin: 10px 0; }
-        img { width: 100%; border-radius: 8px; }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: left;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        img {
+            width: 100%;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .download-btn {
+            display: block;
+            text-align: center;
+            background: #16a34a;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h2>📥 Video Downloader</h2>
-        <input type="text" id="videoUrl" placeholder="YouTube သို့မဟုတ် TikTok လင့်ခ်ထည့်ပါ...">
-        <button onclick="fetchVideo()">ဗီဒီယိုရှာမည်</button>
+        <p style="font-size: 14px; color: #94a3b8;">YouTube သို့မဟုတ် TikTok လင့်ခ်ကို ထည့်ပါ</p>
         
-        <div id="result"></div>
+        <input type="text" id="urlInput" placeholder="လင့်ခ်ကို ဤနေရာတွင် ကူးထည့်ပါ...">
+        <button onclick="downloadVideo()">အချက်အလက် ရယူမည်</button>
+
+        <div id="result" class="result">
+            <h4 id="videoTitle" style="margin: 0 0 10px 0; font-size: 16px;"></h4>
+            <img id="videoThumb" src="" alt="Thumbnail">
+            <a id="downloadBtn" class="download-btn" href="" target="_blank">ဗီဒီယို ဒေါင်းလုပ်ဆွဲရန်</a>
+        </div>
     </div>
 
     <script>
-        // Telegram WebApp ကို initialize လုပ်ခြင်း
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        async function fetchVideo() {
-            let url = document.getElementById('videoUrl').value;
-            let resultDiv = document.getElementById('result');
-            
+        async function downloadVideo() {
+            let url = document.getElementById('urlInput').value.trim();
             if (!url) {
-                alert('ကျေးဇူးပြု၍ လင့်ခ်တစ်ခု ထည့်ပါ။');
+                alert('ကျေးဇူးပြု၍ ဗီဒီယိုလင့်ခ်တစ်ခု ထည့်ပါ');
                 return;
             }
 
-            resultDiv.innerHTML = "ခေတ္တစောင့်ပါ... ရှာဖွေနေသည်...";
+            alert('ခဏစောင့်ပါ၊ ဆာဗာမှ ဆွဲထုတ်နေပါပြီ...');
 
             try {
-                // ကိုယ့် Backend Server လင့်ခ်နဲ့ ချိတ်ရန် (ဥပမာ - https://your-backend.onrender.com/get-video)
-                let response = await fetch('http://127.0.0.1:8000/get-video', {
+                // Render Backend URL အသစ်ချိတ်ဆက်ထားခြင်း
+                let response = await fetch('https://videodownloader-89ye.onrender.com/get-video', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ url: url })
@@ -87,19 +112,15 @@
                 let data = await response.json();
 
                 if (data.success) {
-                    resultDiv.innerHTML = `
-                        <div class="video-title">${data.title}</div>
-                        <img src="${data.thumbnail}" alt="Thumbnail">
-                        <br><br>
-                        <a href="${data.download_url}" target="_blank">
-                            <button style="background-color: #28a745;">ဗီဒီယို ဒေါင်းလုပ်ဆွဲရန်</button>
-                        </a>
-                    `;
+                    document.getElementById('videoTitle').innerText = data.title;
+                    document.getElementById('videoThumb').src = data.thumbnail;
+                    document.getElementById('downloadBtn').href = data.download_url;
+                    document.getElementById('result').style.display = 'block';
                 } else {
-                    resultDiv.innerHTML = "ဗီဒီယို အချက်အလက်ရယူရန် မအောင်မြင်ပါ။";
+                    alert('အမှားအယွင်းရှိသည်: ' + (data.detail || 'မအောင်မြင်ပါ'));
                 }
             } catch (error) {
-                resultDiv.innerHTML = "ဆာဗာသို့ ချိတ်ဆက်၍ မရပါ။ ကျေးဇူးပြု၍ ထပ်မံကြိုးစားပါ။";
+                alert('ချိတ်ဆက်မှု အမှားအယွင်းရှိသည်: ' + error);
             }
         }
     </script>
